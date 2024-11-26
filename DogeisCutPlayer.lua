@@ -1,15 +1,14 @@
 -- todo:
--- clean up some instruments (they sound like shit!!)
-    -- (may need to support note offsets instead of octive and allow multiple sounds to be played at once)
-    -- it will never sound almost the same as the source midi without hold notes unfourtently, this is just a restriction i'll have to deal with
+-- finish instruments
+    -- xp orb sound for triangle
 -- Loading Texttask and Progress bar Texttask
--- Song info
--- morwe songs :3
+-- Song info (name and bpm)
 -- loading songs for players when they join halfway through or my avatar was loading
     -- id have to like start loading the song data partway through it, so maybe i should also ping the max size of the data so i can do padding
 -- make missing instruments complain only once when playing a song while its loading
 -- perhaps i should only read the new data coming in, process that, and append it to the notes array, to save on ticks.
 -- song list command
+-- optimise read_midi_raw_to_table() somehow
 
 -- i wonder how feasable it would be to read the raw data directly instead of turning it into a table...
 
@@ -129,22 +128,22 @@ local instrumentMap = {
 }
 
 local percussionMap = {
-    ["Acoustic Drum"] = {{path = "block.note_block.basedrum", pitch_offset = -1+0.5, note_offset = 0, volume = 2}},
-    ["Electric Bass Drum"] = {{path = "block.note_block.basedrum", pitch_offset = -1+0.5, note_offset = 0, volume = 2},
+    ["Acoustic Drum"] = {{path = "block.note_block.basedrum", pitch_offset = -1+0.5, note_offset = 0, volume = 1.5}},
+    ["Electric Bass Drum"] = {{path = "block.note_block.basedrum", pitch_offset = -1+0.5, note_offset = 0, volume = 1.5},
                        {path = "block.note_block.snare", pitch_offset = -1+0.5, note_offset = 0, volume = 0.2}},
     ["Side Stick"] = {{path = "block.note_block.hat", pitch_offset = -1+1.5, note_offset = 0, volume = 1}},
-    ["Acoustic Snare"] = {{path = "block.note_block.snare", pitch_offset = -1+1.4, note_offset = 0, volume = 1}},
-    ["Hand Clap"] = {{path = "block.note_block.snare", pitch_offset = -1+1.8, note_offset = 0, volume = 0.25},
-                          {path = "block.note_block.snare", pitch_offset = -1+2, note_offset = 0, volume = 0.25},
-                          {path = "item.trident.hit", pitch_offset = 0, note_offset = 0, volume = 0.25}},
-    ["Electric Snare"] = {{path = "block.note_block.snare", pitch_offset = -1+1.4, note_offset = 0, volume = 0.5},
-                          {path = "block.note_block.snare", pitch_offset = -1+0.8, note_offset = 0, volume = 0.5}},
+    ["Acoustic Snare"] = {{path = "block.note_block.snare", pitch_offset = -1+1.4, note_offset = 0, volume = 1.2}},
+    ["Hand Clap"] = {{path = "block.note_block.snare", pitch_offset = -1+1.8, note_offset = 0, volume = 0.3},
+                          {path = "block.note_block.snare", pitch_offset = -1+2, note_offset = 0, volume = 0.3},
+                          {path = "item.trident.hit", pitch_offset = 0, note_offset = 0, volume = 0.3}},
+    ["Electric Snare"] = {{path = "block.note_block.snare", pitch_offset = -1+1.4, note_offset = 0, volume = 0.75},
+                          {path = "block.note_block.snare", pitch_offset = -1+0.8, note_offset = 0, volume = 0.75}},
     ["Low Floor Tom"] = {{path = "block.note_block.basedrum", pitch_offset = -1+0.5, note_offset = 0, volume = 1},
-                         {path = "block.note_block.bass", pitch_offset = -1+0.4, note_offset = -12, volume = 2}},
+                         {path = "block.note_block.bass", pitch_offset = -1+0.4, note_offset = -12, volume = 1.5}},
     ["Closed Hi-hat"] = {{path = "item.trident.hit", pitch_offset = -1+1.8, note_offset = 0, volume = 0.5},
                          {path = "block.note_block.snare", pitch_offset = -1+1.8, note_offset = 0, volume = 0.5}},
     ["High Floor Tom"] = {{path = "block.note_block.basedrum", pitch_offset = 0, note_offset = 0, volume = 1},
-                         {path = "block.note_block.bass", pitch_offset = -1+0.7, note_offset = -12, volume = 2}},
+                         {path = "block.note_block.bass", pitch_offset = -1+0.7, note_offset = -12, volume = 1.5}},
     -- Pedal Hi-hat
     -- Low Tom
     ["Open Hi-hat"] = {{path = "item.trident.hit", pitch_offset = -1+1.8, note_offset = 0, volume = 0.666},
@@ -152,7 +151,7 @@ local percussionMap = {
                        {path = "block.lava.extinguish", pitch_offset = -1+3, note_offset = 0, volume = 0.666}},
     -- Low-Mid Tom
     -- High-Mid Tom
-    ["Crash Cymbal 1"] = {{path = "block.note_block.hat", pitch_offset = -1+2, note_offset = 0, volume = 0.5},
+    ["Crash Cymbal 1"] = {{path = "block.note_block.hat", pitch_offset = -1+2, note_offset = 0, volume = 0.75},
                        {path = "block.lava.extinguish", pitch_offset = 0, note_offset = 0, volume = 0.5}},
 }
 

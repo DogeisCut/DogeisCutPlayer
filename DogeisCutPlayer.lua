@@ -109,8 +109,8 @@ local instrumentMap = {
     -- ..
     ["Flute"] = {{path = "block.note_block.guitar", pitch_offset = 0, note_offset = 3-12, volume = 1}},
     -- ..
-    ["Lead 1 (square)"] = {{path = "block.note_block.bit", pitch_offset = 0, note_offset = 3+12, volume = 0.8},
-                           {path = "block.note_block.bit", pitch_offset = 0.005, note_offset = 3+12, volume = 0.8}},
+    ["Lead 1 (square)"] = {{path = "block.note_block.bit", pitch_offset = 0, note_offset = 3, volume = 0.8},
+                           {path = "block.note_block.bit", pitch_offset = 0.005, note_offset = 3, volume = 0.8}},
     ["Lead 2 (sawtooth)"] = {{path = "block.note_block.bit", pitch_offset = 0, note_offset = 3, volume = 0.8},
                            {path = "block.note_block.bit", pitch_offset = 0.01, note_offset = 3, volume = 0.9}},
     ["Lead 5 (charang)"] = {{path = "block.note_block.didgeridoo", pitch_offset = 0, note_offset = 3+12, volume = 1},
@@ -222,6 +222,10 @@ local function setSong(data)
     song = read_midi_raw_to_table(data)
 end
 
+local function extendSong(data)
+    song = read_midi_raw_to_table(data)
+end
+
 function pings.setPlaying(to)
     setSong(chunked_song_data)
     playing = to
@@ -298,7 +302,7 @@ local file_data = ""
 
 function pings.appendSongData(what)
     chunked_song_data = chunked_song_data .. what
-    setSong(chunked_song_data)
+    extendSong(chunked_song_data)
 end
 
 local function loadSongData()

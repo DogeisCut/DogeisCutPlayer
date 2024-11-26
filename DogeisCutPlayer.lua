@@ -384,7 +384,7 @@ function pings.resetAndLoad()
     tick = 0
     syncTimer = 0
 
-    chunking_timer = 0
+    chunking_timer = 32
     chunking_count = 0
     loadSongData()
 end

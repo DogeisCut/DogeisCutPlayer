@@ -15,9 +15,6 @@
 
 -- read_midi_raw_to_table is the bottleneck
 
--- C:\Users\pinkc\AppData\Roaming\ModrinthApp\profiles\Figura\figura\data\DogeisCutPlayerSongs
--- R:\python experements\Midi to Figura DogeisCutPlayer
-
 local option
 
 local function getLoadingBar(percentage)

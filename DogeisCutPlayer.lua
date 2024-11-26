@@ -250,7 +250,7 @@ local function play_note(pitch, instrument, volume)
             if not percussionMap[percussion[pitch-35]] then
                 if not table.has(knownMissingInstruments, percussion[pitch-35]) then
                     if percussion and pitch-35 and percussion[pitch-35] then
-                        print("Unknown percussion: " .. percussion[pitch-35] .. " (" .. instrument + 1 .. ") ")
+                        print("Unknown percussion: " .. percussion[pitch-35] .. " (" .. pitch-35 .. ") ")
                         table.insert(knownMissingInstruments, percussion[pitch-35])
                     end
                 end
@@ -271,7 +271,7 @@ local function play_note(pitch, instrument, volume)
             if not instrumentMap[instruments[instrument + 1]] then
                 if not table.has(knownMissingInstruments, instruments[instrument + 1]) then
                     if instrument and instruments[instrument + 1] then
-                        print("Unknown instrument: " .. instruments[instrument + 1] .. " (" .. instrument + 1 .. ") ")
+                        print("Unknown instrument: " .. instruments[instrument + 1] .. " (" .. instrument .. ") ")
                         table.insert(knownMissingInstruments, instruments[instrument + 1])
                     end
                 end

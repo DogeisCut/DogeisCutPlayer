@@ -62,8 +62,8 @@ local instrumentMap = {
                                 {path = "block.note_block.harp", pitch_offset = 0, note_offset = 3+12, volume = 0.5},
                                 {path = "block.note_block.pling", pitch_offset = 0, note_offset = 3+24, volume = 0.1}},
     ["Honky-tonk Piano"] =  {{path = "block.note_block.harp", pitch_offset = 0, note_offset = 3, volume = 0.5},
-                                {path = "block.note_block.harp", pitch_offset = 0.05, note_offset = 3+12, volume = 0.5},
-                                {path = "block.note_block.harp", pitch_offset = 0.05, note_offset = 3+24, volume = 0.25}},
+                                {path = "block.note_block.harp", pitch_offset = 0.02, note_offset = 3+12, volume = 0.5},
+                                {path = "block.note_block.harp", pitch_offset = 0.02, note_offset = 3+24, volume = 0.25}},
     ["Electric Piano 1"] = {{path = "block.note_block.pling", pitch_offset = 0, note_offset = 3, volume = 0.75},
                                 {path = "block.note_block.harp", pitch_offset = 0, note_offset = 3+12, volume = 0.5}},
     ["Electric Piano 2"] = {{path = "block.note_block.bit", pitch_offset = 0, note_offset = 3+12, volume = 0.75},
@@ -106,7 +106,10 @@ local instrumentMap = {
     -- ..
     ["Acoustic Guitar (nylon)"] = {{path = "block.note_block.guitar", pitch_offset = 0, note_offset = 3, volume = 1}},
     -- ..
-    ["Flute"] = {{path = "block.note_block.guitar", pitch_offset = 0, note_offset = 3-12, volume = 1}},
+    ["Overdriven Guitar"] = {{path = "overdrive", pitch_offset = 0, note_offset = -12, volume = 0.333333}},
+    -- ..
+    ["Flute"] = {{path = "block.note_block.flute", pitch_offset = 0, note_offset = 3-12, volume = 1}},
+    ["Recorder"] = {{path = "block.note_block.flute", pitch_offset = 0.003, note_offset = 3-12, volume = 1}},
     -- ..
     ["Lead 1 (square)"] = {{path = "block.note_block.bit", pitch_offset = 0, note_offset = 3, volume = 0.8},
                            {path = "block.note_block.bit", pitch_offset = 0.005, note_offset = 3, volume = 0.8}},

@@ -9,6 +9,7 @@
 -- perhaps i should only read the new data coming in, process that, and append it to the notes array, to save on ticks.
 -- song list command
 -- optimise read_midi_raw_to_table() somehow
+-- fix sounds getting stuck
 
 -- i wonder how feasable it would be to read the raw data directly instead of turning it into a table...
 
@@ -16,6 +17,50 @@
 
 -- C:\Users\pinkc\AppData\Roaming\ModrinthApp\profiles\Figura\figura\data\DogeisCutPlayerSongs
 -- R:\python experements\Midi to Figura DogeisCutPlayer
+
+local option
+
+local function getLoadingBar(percentage)
+    local barLength = 50
+    local filled = math.floor((percentage / 100) * barLength)
+    local empty = barLength - filled
+    local bar = "[" .. string.rep("|", filled) .. string.rep(":", empty) .. "]"
+    return (bar .. " " .. math.round(percentage*100)/100 .. "%")
+end
+
+local function getProgressBar(percentage, maxSeconds)
+    local barLength = 50
+    local filled = math.floor((percentage / 100) * barLength)
+    local empty = barLength - filled
+    local bar = "[" .. string.rep("|", filled) .. string.rep(":", empty) .. "]"
+    
+    local currentSeconds = math.floor((percentage / 100) * maxSeconds)
+    local currentMinutes = math.floor(currentSeconds / 60)
+    local currentSecs = currentSeconds % 60
+    local totalMinutes = math.floor(maxSeconds / 60)
+    local totalSecs = maxSeconds % 60
+    
+    local timeDisplay = string.format("%d:%02d/%d:%02d", currentMinutes, currentSecs, totalMinutes, totalSecs)
+    return (bar .. " " .. timeDisplay)
+end
+
+local songInfoPart = models:newPart("songInfoPart","Camera"):setPivot(0,50,0)
+local songTitleTextTask = songInfoPart:newText("songTitle")
+:setAlignment("center")
+:setText("No song set!")
+:setPos(0,4,0)
+:setScale(0.4)
+local loadingBarTextTask = songInfoPart:newText("loadingBar")
+:setAlignment("center")
+:setText(getLoadingBar(0))
+:setPos(0,0,0)
+:setScale(0.4)
+local progressBarTextTask = songInfoPart:newText("progressBar")
+:setAlignment("center")
+:setText(getProgressBar(0,0))
+:setPos(0,-4,0)
+:setScale(0.4)
+local bpmTextTask = nil
 
 local instruments = {
     "Acoustic Grand Piano", "Bright Acoustic Piano", "Electric Grand Piano", "Honky-tonk Piano", "Electric Piano 1",
@@ -224,8 +269,9 @@ local function setSong(data)
     song = read_midi_raw_to_table(data)
 end
 
-local function extendSong(data)
+local function extendSong(data, percent)
     song = read_midi_raw_to_table(data)
+    loadingBarTextTask:setText(getLoadingBar(percent))
 end
 
 function pings.setPlaying(to)
@@ -302,9 +348,9 @@ action_wheel:setPage(mainPage)
 local file_path = "DogeisCutPlayerSongs/output.dicps"
 local file_data = ""
 
-function pings.appendSongData(what)
+function pings.appendSongData(what, percent)
     chunked_song_data = chunked_song_data .. what
-    extendSong(chunked_song_data)
+    extendSong(chunked_song_data, percent)
 end
 
 local function loadSongData()
@@ -346,7 +392,7 @@ mainPage:newAction()
 end)
 
 mainPage:newAction()
-  :title("Stop Song")
+  :title("Stop/Unload Song")
   :item("minecraft:jukebox")
   :hoverColor(1, 0, 1)
   :onLeftClick(function() 
@@ -403,7 +449,7 @@ function events.tick()
     if file_data ~= "" and chunking_timer>=0 then
         chunking_timer = chunking_timer + 1
         if chunking_timer >= 32 then
-            local chunkSize = 1000
+            local chunkSize = 900
 
             chunking_count = chunking_count + 1
 
@@ -411,13 +457,13 @@ function events.tick()
             local total_bytes = #file_data
             local percentage_done = (processed_bytes / total_bytes) * 100
 
-            print(string.format("Progress: %.2f%%", percentage_done))
+            --print(string.format("Progress: %.2f%%", percentage_done))
 
             chunking_timer = 0
-            pings.appendSongData(string.sub(file_data, 1 + ((chunking_count-1) * chunkSize), math.min(chunkSize*chunking_count, #file_data)))
+            pings.appendSongData(string.sub(file_data, 1 + ((chunking_count-1) * chunkSize), math.min(chunkSize*chunking_count, #file_data)), percentage_done)
             if math.min(chunkSize*chunking_count, #file_data) == #file_data then
                 chunking_timer = -9999999999
-                print("chunking done!")
+                --print("chunking done!")
             end
         end
     end
@@ -445,8 +491,10 @@ function pings.setTempo(to)
     print("Tempo set to: " .. tempo)
 end
 
-function pings.setSongPath(to)
+function pings.setSongPath(to, title)
     file_path = to
+    songTitleTextTask:setText(title)
+    loadingBarTextTask:setText(getLoadingBar(0))
     print("Song path set to: " .. file_path)
 end
 
@@ -467,7 +515,7 @@ function events.CHAT_SEND_MESSAGE(msg)
                 if playing or file_data ~= "" then
                     print("Please stop the song or stop loading it before trying to change it!")
                 else
-                    pings.setSongPath( "DogeisCutPlayerSongs/" .. arg .. ".dicps")
+                    pings.setSongPath( "DogeisCutPlayerSongs/" .. arg .. ".dicps", arg)
                 end
             else
                 print("Invalid file path argument!")

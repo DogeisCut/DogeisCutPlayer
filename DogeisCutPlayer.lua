@@ -18,11 +18,11 @@
 local option
 
 local function getLoadingBar(percentage)
-    local barLength = 50
+    local barLength = 25
     local filled = math.floor((percentage / 100) * barLength)
     local empty = barLength - filled
     local bar = "[" .. string.rep("|", filled) .. string.rep(":", empty) .. "]"
-    return (bar .. " " .. math.round(percentage*100)/100 .. "%")
+    return (bar .. " " .. math.round(percentage*100)/100 .. "% " .. "Loaded")
 end
 
 local function getProgressBar(percentage, maxSeconds)
@@ -42,6 +42,11 @@ local function getProgressBar(percentage, maxSeconds)
 end
 
 local songInfoPart = models:newPart("songInfoPart","Camera"):setPivot(0,50,0)
+local advert = songInfoPart:newText("advert")
+:setAlignment("center")
+:setText("DogeisCut Player:")
+:setPos(0,8,0)
+:setScale(0.4)
 local songTitleTextTask = songInfoPart:newText("songTitle")
 :setAlignment("center")
 :setText("No song set!")
@@ -147,11 +152,28 @@ local instrumentMap = {
                         {path = "block.note_block.flute", pitch_offset = 0.03, note_offset = 3, volume = 0.2}},
     -- ..
     ["Acoustic Guitar (nylon)"] = {{path = "block.note_block.guitar", pitch_offset = 0, note_offset = 3, volume = 1}},
+
+    ["Acoustic Guitar (steel)"] = {{path = "block.note_block.guitar", pitch_offset = 0, note_offset = 3+12, volume = 0.9},
+                                   {path = "block.note_block.iron_xylophone", pitch_offset = 0, note_offset = 3+12, volume = 0.4}},
     -- ..
-    ["Overdriven Guitar"] = {{path = "overdrive", pitch_offset = 0, note_offset = -12, volume = 0.333333}},
+    ["Overdriven Guitar"] = {{path = "overdrive", pitch_offset = 0, note_offset = 0, volume = 0.333333}},
+    ["Distortion Guitar"] = {{path = "overdrive", pitch_offset = 0.01, note_offset = -12, volume = 0.15},
+                             {path = "overdrive", pitch_offset = 0, note_offset = 0, volume = 0.15}},
+    -- ..
+    ["Violin"] = {{path = "string", pitch_offset = 0, note_offset = 12, volume = 0.25},
+                  {path = "string", pitch_offset = 0, note_offset = 24, volume = 0.1}},
+    -- ..
+    ["String Ensemble 1"] = {{path = "string", pitch_offset = 0, note_offset = 0, volume = 0.3333}},
     -- ..
     ["Flute"] = {{path = "block.note_block.flute", pitch_offset = 0, note_offset = 3-12, volume = 1}},
     ["Recorder"] = {{path = "block.note_block.flute", pitch_offset = 0.003, note_offset = 3-12, volume = 1}},
+
+    ["Clarinet"] = {{path = "block.note_block.flute", pitch_offset = -0.003, note_offset = 3-12, volume = 1},
+                    {path = "string", pitch_offset = -0.003, note_offset = 0, volume = 0.15}},
+
+    ["Alto Sax"] = {{path = "block.note_block.didgeridoo", pitch_offset = 0, note_offset = 3+12, volume = 1},
+                        {path = "string", pitch_offset = 0, note_offset = 0+12, volume = 0.3},
+                        {path = "block.note_block.flute", pitch_offset = 0, note_offset = 3-12+12, volume = 0.3}},
     -- ..
     ["Lead 1 (square)"] = {{path = "block.note_block.bit", pitch_offset = 0, note_offset = 3, volume = 0.8},
                            {path = "block.note_block.bit", pitch_offset = 0.005, note_offset = 3, volume = 0.8}},
@@ -170,6 +192,22 @@ local instrumentMap = {
     -- ...
     ["Koto"] = {{path = "block.note_block.harp", pitch_offset = 0, note_offset = 3, volume = 0.75}, 
                 {path = "block.note_block.banjo", pitch_offset = 0, note_offset = 3+12, volume = 0.75}},
+    -- ...
+    ["Reverse Cymbal"] = {{path = "entity.breeze.inhale", pitch_offset = -1+0.8, note_offset = 0, volume = 4}}, -- 1.21 exclusive but whatever, there isnt really a much better sound..
+
+    ["Slap Bass 1"] = {{path = "block.note_block.guitar", pitch_offset = 0, note_offset = 3+24, volume = 0.75},
+                        {path = "block.note_block.harp", pitch_offset = 0, note_offset = 3, volume = 0.75}},
+    ["Slap Bass 2"] = {{path = "block.note_block.guitar", pitch_offset = 0, note_offset = 3+24, volume = 0.75},
+                      {path = "block.note_block.harp", pitch_offset = 0, note_offset = 3+12, volume = 0.75}},
+
+    ["Electric Bass (pick)"] = {{path = "block.note_block.bit", pitch_offset = 0, note_offset = 3+24, volume = 0.5/2}, -- wtf?
+                            {path = "block.note_block.guitar", pitch_offset = 0, note_offset = 3+24, volume = 0.75/2},
+                            {path = "block.note_block.bass", pitch_offset = 0, note_offset = 3+24+(12*3), volume = 0.5}},
+    
+    ["Timpani"] = {{path = "block.note_block.basedrum", pitch_offset = 0, note_offset = 3-24, volume = 2},
+                     {path = "block.note_block.basedrum", pitch_offset = 0, note_offset = 3-12, volume = 2},
+                      {path = "block.note_block.didgeridoo", pitch_offset = 0, note_offset = 3, volume = 2},
+                      {path = "block.note_block.didgeridoo", pitch_offset = 0.003, note_offset = 3, volume = 2}},
 }
 
 local percussionMap = {
@@ -216,6 +254,8 @@ local chunking_count = 0
 local knownMissingInstruments = {}
 
 local tick_counter = 0
+
+local simple_instrument_mode = false -- Songs like Rude Buster may need to use this thanks to Minecraft's 247 sound limit.
 
 local function read_midi_raw_to_table(song_data)
     local table_result = {}
@@ -301,15 +341,18 @@ local function play_note(pitch, instrument, volume)
                     end
                 end
             else
-                local percussion = percussionMap[percussion[pitch-35]]
-                for _,sound in ipairs(percussion) do
+                local actualPercussion = percussionMap[percussion[pitch-35]]
+                for _,sound in ipairs(actualPercussion) do
                     sounds[sound.path]
                     :setPos(player:getPos())
                     :setAttenuation(2.5)
                     :setVolume((volume/100) * sound.volume * 0.5)
                     :setPitch((2^((sound.note_offset + 1)/12)) + sound.pitch_offset)
-                    :setSubtitle("Percussion")
+                    :setSubtitle(percussion[pitch-35])
                     :play()
+                    if simple_instrument_mode and _>1 then
+                        break
+                    end
                 end
             end
         else
@@ -332,6 +375,9 @@ local function play_note(pitch, instrument, volume)
                 :setPitch((2^(((pitch+sound.note_offset) - 69)/12)) + sound.pitch_offset)
                 :setSubtitle(instruments[instrument + 1])
                 :play()
+                if simple_instrument_mode and _>1 then
+                    break
+                end
             end
         end
     end 
@@ -446,7 +492,7 @@ function events.tick()
     if file_data ~= "" and chunking_timer>=0 then
         chunking_timer = chunking_timer + 1
         if chunking_timer >= 32 then
-            local chunkSize = 900
+            local chunkSize = 650
 
             chunking_count = chunking_count + 1
 
